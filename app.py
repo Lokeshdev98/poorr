@@ -78,7 +78,6 @@ if submit:
             conn, cursor = connect_db()
             query = "INSERT INTO donations (name, email, payment_file) VALUES (?, ?, ?)"
             values = (name, email, payment_file.name)
-            cursor.execute(query, values)
             conn.commit()
             cursor.close()
             conn.close()
