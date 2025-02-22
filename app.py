@@ -1,15 +1,22 @@
 import streamlit as st
-import mysql.connector
+import sqlite3
 import os
 
 # Database connection
 def connect_db():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",  # Change if your MySQL username is different
-        password="",  # Add password if set
-        database="donations_db"
-    )
+    conn = sqlite3.connect("donations.db")
+    cursor = conn.cursor()
+    # Create table if it doesn't exist
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS donations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            payment_file TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    return conn, cursor
 
 # Set upload folder
 UPLOAD_FOLDER = "uploads"
@@ -66,11 +73,10 @@ if submit:
         with open(file_path, "wb") as f:
             f.write(payment_file.getbuffer())
 
-        # Insert data into MySQL
+        # Insert data into SQLite
         try:
-            conn = connect_db()
-            cursor = conn.cursor()
-            query = "INSERT INTO donations (name, email, payment_file) VALUES (%s, %s, %s)"
+            conn, cursor = connect_db()
+            query = "INSERT INTO donations (name, email, payment_file) VALUES (?, ?, ?)"
             values = (name, email, payment_file.name)
             cursor.execute(query, values)
             conn.commit()
@@ -87,3 +93,4 @@ if submit:
 st.markdown("""
     <h4>If any Queries?<br>Contact us: 6281770026<br>lokeshdevarakonda143@gmail.com</h4>
 """, unsafe_allow_html=True)
+
